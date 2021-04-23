@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
-import 'package:registration_form_app/validation/registration_validation.dart';
+import 'package:registration_form_app/viewModels/personalInfoProvider.dart';
+import 'package:registration_form_app/views/address_info_page.dart';
+import 'package:registration_form_app/widgets/custom_textField.dart';
+import 'package:registration_form_app/widgets/custom_ui_pickerview.dart';
 import 'package:registration_form_app/widgets/custom_widgets.dart';
+import 'package:registration_form_app/widgets/cutom_appbar.dart';
 
 class PersonalInfoPage extends StatefulWidget {
   @override
@@ -17,24 +21,18 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   TextEditingController _domainController = TextEditingController();
   final FocusNode _passingYearNode = FocusNode();
   final FocusNode _experienceNode = FocusNode();
-  List<String> eduationList = [
-    "Post Graduate",
-    "Graduate",
-    "HSC/Diploma",
-    "SSC"
-  ];
 
   @override
   void initState() {
     super.initState();
 
-    final validationService =
-        Provider.of<RegistrationValidation>(context, listen: false);
+    final personalInfoProvider =
+        Provider.of<PersonalInfoProvider>(context, listen: false);
 
-    initialAssigns(validationService);
+    initialAssigns(personalInfoProvider);
   }
 
-  initialAssigns(RegistrationValidation validationService) {
+  initialAssigns(PersonalInfoProvider validationService) {
     _passingYearcontroller.text = validationService.yearOfPassing.value;
     _gradeController.text = validationService.grade.value;
     _experienceController.text = validationService.experience.value;
@@ -90,10 +88,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    var validationService = Provider.of<RegistrationValidation>(context);
+    var personalInfoProvider = Provider.of<PersonalInfoProvider>(context);
     return WillPopScope(
       onWillPop: () async {
-        validationService.changePage(Pages.BasicInfo);
+        Navigator.of(context).pop(true);
         return false;
       },
       child: Scaffold(
@@ -103,29 +101,30 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  customAppBar(
+                  CustomAppBar(
                     title: "Your Info",
-                    onPressed: () =>
-                        validationService.changePage(Pages.BasicInfo),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
                   ),
                   SizedBox(
                     height: 20,
                   ),
-                  customPickerField(
+                  CustomPickerFiled(
                       headingMessage: "Education*",
-                      value: validationService.qualification.value,
+                      value: personalInfoProvider.qualification.value,
                       onTap: () {
                         showPicker(
                             context: context,
-                            items: eduationList,
+                            items: personalInfoProvider.educationList,
                             onConfirm: (controller) {
-                              String item = eduationList[
+                              String item = personalInfoProvider.educationList[
                                   controller.selectedRowAt(section: 0)];
-                              validationService.setQualification(item);
+                              personalInfoProvider.setQualification(item);
                             },
                             pickerHeading: "Education",
                             onCancel: () {
-                              validationService.deSelectQualification();
+                              personalInfoProvider.deSelectQualification();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Qualification reset'),
@@ -133,25 +132,27 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               );
                             });
                       }),
-                  customTextField(
+                  CustomTextField(
                       focusNode: _passingYearNode,
                       controller: _passingYearcontroller,
-                      headingMessage: "Year of Passing*",
-                      hintMessage: "Enter year of passing",
+                      textFieldHeading: "Year of Passing*",
+                      hintText: "Enter year of passing",
+                      icon: null,
                       onSubmitted: (String value) {
-                        validationService.validateYearOfPassing(value);
+                        personalInfoProvider.validateYearOfPassing(value);
                       },
-                      errorText: validationService.yearOfPassing.error,
+                      errorText: personalInfoProvider.yearOfPassing.error,
                       textInputType: TextInputType.number,
-                      isIconVisible: true),
-                  customTextField(
+                      isPasswordField: false,
+                      isVisible: false),
+                  CustomTextField(
                     controller: _gradeController,
-                    headingMessage: "Grade*",
-                    hintMessage: "Enter your grade/percentage",
+                    textFieldHeading: "Grade*",
+                    hintText: "Enter your grade/percentage",
                     onSubmitted: (String value) {
-                      validationService.validateGrade(value);
+                      personalInfoProvider.validateGrade(value);
                     },
-                    errorText: validationService.grade.error,
+                    errorText: personalInfoProvider.grade.error,
                     textInputType: TextInputType.text,
                   ),
                   Padding(
@@ -174,49 +175,51 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       ],
                     ),
                   ),
-                  customTextField(
+                  CustomTextField(
                     focusNode: _experienceNode,
                     controller: _experienceController,
-                    headingMessage: "Experience*",
-                    hintMessage: "Enter the years of experience",
+                    textFieldHeading: "Experience*",
+                    hintText: "Enter the years of experience",
                     onSubmitted: (String value) {
-                      validationService.validateExperience(value);
+                      personalInfoProvider.validateExperience(value);
                     },
-                    errorText: validationService.experience.error,
+                    errorText: personalInfoProvider.experience.error,
                     textInputType: TextInputType.number,
                   ),
-                  customTextField(
-                      controller: _designationController,
-                      headingMessage: "Designation*",
-                      hintMessage: "Select Designation",
-                      onSubmitted: (String value) {
-                        validationService.validateDesignation(value);
-                      },
-                      errorText: validationService.designation.error,
-                      textInputType: TextInputType.text,
-                      isIconVisible: true),
-                  customTextField(
-                      controller: _domainController,
-                      headingMessage: "Domain",
-                      hintMessage: "Select your Domain",
-                      onSubmitted: (String value) {
-                        validationService.setDomain(value);
-                      },
-                      errorText: validationService.yearOfPassing.error,
-                      textInputType: TextInputType.text,
-                      isIconVisible: true),
+                  CustomTextField(
+                    controller: _designationController,
+                    textFieldHeading: "Designation*",
+                    hintText: "Select Designation",
+                    onSubmitted: (String value) {
+                      personalInfoProvider.validateDesignation(value);
+                    },
+                    errorText: personalInfoProvider.designation.error,
+                    textInputType: TextInputType.text,
+                    isPasswordField: false,
+                  ),
+                  CustomTextField(
+                    controller: _domainController,
+                    textFieldHeading: "Domain",
+                    hintText: "Select your Domain",
+                    onSubmitted: (String value) {
+                      personalInfoProvider.setDomain(value);
+                    },
+                    errorText: personalInfoProvider.yearOfPassing.error,
+                    textInputType: TextInputType.text,
+                    isPasswordField: false,
+                  ),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          !validationService.isPersonalInfoValid
+                          !personalInfoProvider.isPersonalInfoValid
                               ? "Please fill the required details with * symbol"
                               : "",
                           style: TextStyle(color: Colors.red, fontSize: 10),
                         ),
-                        if (!validationService.isPersonalInfoValid)
+                        if (!personalInfoProvider.isPersonalInfoValid)
                           SizedBox(
                             height: 15,
                           ),
@@ -235,7 +238,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                                   ),
                                 ),
                                 onPressed: () {
-                                  validationService.changePage(Pages.BasicInfo);
+                                  Navigator.of(context).pop(true);
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
@@ -256,9 +259,16 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                                       MaterialStateProperty.all<Color>(
                                           Colors.indigo[800]),
                                 ),
-                                onPressed: () {
-                                  if (validationService.isPersonalInfoValid) {
-                                    validationService.changePage(Pages.Address);
+                                onPressed: () async {
+                                  if (personalInfoProvider
+                                      .isPersonalInfoValid) {
+                                    var value = await Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (context) =>
+                                                AddressPage()));
+                                    if (value && value != null) {
+                                      initialAssigns(personalInfoProvider);
+                                    }
                                   }
                                 },
                                 child: Padding(

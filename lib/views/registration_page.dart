@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:registration_form_app/screens/address_info_page.dart';
-import 'package:registration_form_app/screens/basic_info_page.dart';
-import 'package:registration_form_app/screens/personal_info_page.dart';
-import 'package:registration_form_app/validation/registration_validation.dart';
+import 'package:registration_form_app/views/basic_info_page.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -27,26 +23,8 @@ class _RegistrationState extends State<RegistrationPage>
 
     _controller.forward();
   }
-
-  Widget getPage(Pages page) {
-    switch (page) {
-      case Pages.BasicInfo:
-        return BasicInfoPage();
-        break;
-      case Pages.PerofessionalInfo:
-        return PersonalInfoPage();
-        break;
-      case Pages.Address:
-        return AddressPage();
-        break;
-      default:
-        return BasicInfoPage();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final registrationService = Provider.of<RegistrationValidation>(context);
     return Scaffold(
       body: SafeArea(
         child: AnimatedSwitcher(
@@ -55,7 +33,7 @@ class _RegistrationState extends State<RegistrationPage>
             child: widget,
           ),
           duration: Duration(seconds: 1),
-          child: getPage(registrationService.page),
+          child: BasicInfoPage(),
         ),
       ),
     );

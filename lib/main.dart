@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:registration_form_app/screens/registration_page.dart';
-import 'package:registration_form_app/validation/registration_validation.dart';
+import 'package:registration_form_app/viewModels/addressInfoProvider.dart';
+import 'package:registration_form_app/viewModels/basicInfoProvider.dart';
+import 'package:registration_form_app/viewModels/personalInfoProvider.dart';
+import 'package:registration_form_app/views/registration_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,8 +12,12 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => RegistrationValidation(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<BasicInfoProvider>(create: (_) => BasicInfoProvider()),
+        ChangeNotifierProvider<PersonalInfoProvider>(create: (_) => PersonalInfoProvider()),
+        ChangeNotifierProvider<AddressInfoProvider>(create: (_) => AddressInfoProvider()), 
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: RegistrationPage(),

@@ -6,9 +6,11 @@ import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:keyboard_actions/keyboard_actions_config.dart';
 import 'package:keyboard_actions/keyboard_actions_item.dart';
 import 'package:provider/provider.dart';
-import 'package:registration_form_app/validation/registration_validation.dart';
+import 'package:registration_form_app/viewModels/basicInfoProvider.dart';
+import 'package:registration_form_app/views/personal_info_page.dart';
 import 'package:registration_form_app/widgets/custom_image_picker.dart';
-import 'package:registration_form_app/widgets/custom_widgets.dart';
+import 'package:registration_form_app/widgets/custom_radioButton.dart';
+import 'package:registration_form_app/widgets/custom_textfield.dart';
 
 class BasicInfoPage extends StatefulWidget {
   @override
@@ -29,50 +31,51 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
     super.initState();
 
     final registrationService =
-        Provider.of<RegistrationValidation>(context, listen: false);
+        Provider.of<BasicInfoProvider>(context, listen: false);
 
     initialAssigns(registrationService);
   }
 
-  initialAssigns(RegistrationValidation registrationService) {
-    _firstName.text = registrationService.firstName.value;
-    _lastName.text = registrationService.lastName.value;
-    _phoneNumber.text = registrationService.phoneNumber.value;
-    _email.text = registrationService.email.value;
-    _password.text = registrationService.password.value;
-    _confirmPassword.text = registrationService.confirmPassword.value;
+  initialAssigns(BasicInfoProvider basicInfoProvider) {
+    _firstName.text = basicInfoProvider.firstName.value;
+    _lastName.text = basicInfoProvider.lastName.value;
+    _phoneNumber.text = basicInfoProvider.phoneNumber.value;
+    _email.text = basicInfoProvider.email.value;
+    _password.text = basicInfoProvider.password.value;
+    _confirmPassword.text = basicInfoProvider.confirmPassword.value;
   }
+
   KeyboardActionsConfig buildConfig(BuildContext context) {
-  return KeyboardActionsConfig(
-    keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
-    keyboardBarColor: Colors.grey[200],
-    nextFocus: true,
-    actions: [
-      KeyboardActionsItem(
-        focusNode: _phoneNumberNode,
-        toolbarButtons: [
-          (node) {
-            return GestureDetector(
-              onTap: () => node.unfocus(),
-              child: Container(
-                color: Colors.white,
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  "Done",
-                  style: TextStyle(color: Colors.black),
+    return KeyboardActionsConfig(
+      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
+      keyboardBarColor: Colors.grey[200],
+      nextFocus: true,
+      actions: [
+        KeyboardActionsItem(
+          focusNode: _phoneNumberNode,
+          toolbarButtons: [
+            (node) {
+              return GestureDetector(
+                onTap: () => node.unfocus(),
+                child: Container(
+                  color: Colors.white,
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "Done",
+                    style: TextStyle(color: Colors.black),
+                  ),
                 ),
-              ),
-            );
-          },
-        ],
-      ),
-    ],
-  );
-}
+              );
+            },
+          ],
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final registrationService = Provider.of<RegistrationValidation>(context);
+    final basicInfoProvider = Provider.of<BasicInfoProvider>(context);
 
     return WillPopScope(
       onWillPop: () async {
@@ -109,9 +112,9 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                     GestureDetector(
                       onTap: () async {
                         var file = await mImagePickerOptions(context);
-                        
+
                         if (file != null) {
-                          registrationService.setImage(File(file.path));
+                          basicInfoProvider.setImage(File(file.path));
                         }
                       },
                       child: Stack(
@@ -122,9 +125,9 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                             margin: EdgeInsets.symmetric(horizontal: 10),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(100),
-                              child: registrationService.image.file != null
+                              child: basicInfoProvider.image.file != null
                                   ? Image.file(
-                                      registrationService.image.file,
+                                      basicInfoProvider.image.file,
                                       fit: BoxFit.cover,
                                     )
                                   : SvgPicture.asset("Assets/user.svg"),
@@ -152,77 +155,77 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                     ),
                   ],
                 ),
-                showTextField(
+                CustomTextField(
                   controller: _firstName,
                   textFieldHeading: 'FirstName*',
                   hintText: 'Enter your first name here',
-                  errorText: registrationService.firstName.error,
+                  errorText: basicInfoProvider.firstName.error,
                   icon: Icons.person,
                   onSubmitted: (value) {
-                    registrationService.validateFirstName(_firstName.text);
+                    basicInfoProvider.validateFirstName(_firstName.text);
                   },
                 ),
-                showTextField(
+                CustomTextField(
                   controller: _lastName,
                   textFieldHeading: 'LastName*',
                   hintText: 'Enter your last name here',
-                  errorText: registrationService.lastName.error,
+                  errorText: basicInfoProvider.lastName.error,
                   icon: Icons.person,
                   onSubmitted: (value) {
-                    registrationService.validateLastName(value);
+                    basicInfoProvider.validateLastName(value);
                   },
                 ),
-                showTextField(
+                CustomTextField(
                     focusNode: _phoneNumberNode,
                     controller: _phoneNumber,
                     textFieldHeading: 'Phone Number*',
                     hintText: 'Enter your 10 digit phone number',
-                    errorText: registrationService.phoneNumber.error,
+                    errorText: basicInfoProvider.phoneNumber.error,
                     icon: Icons.phone,
                     onSubmitted: (value) {
-                      registrationService.validatePhoneNumer(value);
+                      basicInfoProvider.validatePhoneNumer(value);
                     },
                     textInputType: TextInputType.number,
                     maxLength: 10),
-                showTextField(
+                CustomTextField(
                   controller: _email,
                   textFieldHeading: 'Email*',
                   hintText: 'Your email goes here',
-                  errorText: registrationService.email.error,
+                  errorText: basicInfoProvider.email.error,
                   icon: Icons.email,
                   onSubmitted: (value) {
-                    registrationService.validateEmail(value);
+                    basicInfoProvider.validateEmail(value);
                   },
                 ),
-                showRadioGroup(
+                CustomRadioButton(
                   onChanged: (value) {
-                    registrationService.changeGender(value);
+                    basicInfoProvider.changeGender(value);
                   },
-                  value: registrationService.gender.value,
+                  value: basicInfoProvider.gender.value,
                 ),
-                showTextField(
+                CustomTextField(
                     controller: _password,
                     textFieldHeading: 'Password*',
                     hintText: 'Password',
-                    errorText: registrationService.password.error,
+                    errorText: basicInfoProvider.password.error,
                     icon: Icons.lock,
                     onSubmitted: (value) {
-                      registrationService.changePassword(value);
+                      basicInfoProvider.changePassword(value);
                     },
                     textInputType: TextInputType.text,
                     isPasswordField: true,
-                    isVisible: registrationService.passwordVisible,
+                    isVisible: basicInfoProvider.passwordVisible,
                     onSuffixIconPressed: () {
-                      registrationService.toggleVisibility();
+                      basicInfoProvider.toggleVisibility();
                     }),
-                showTextField(
+                CustomTextField(
                   controller: _confirmPassword,
                   textFieldHeading: 'Confirm Password*',
                   hintText: 'Password',
-                  errorText: registrationService.confirmPassword.error,
+                  errorText: basicInfoProvider.confirmPassword.error,
                   icon: Icons.lock,
                   onSubmitted: (value) {
-                    registrationService.changeConfirmPassword(value);
+                    basicInfoProvider.changeConfirmPassword(value);
                   },
                 ),
                 SizedBox(
@@ -234,7 +237,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        !registrationService.isBasicInfoValid
+                        !basicInfoProvider.isBasicInfoValid
                             ? "Please fill the required details with * symbol"
                             : "",
                         style: TextStyle(color: Colors.red, fontSize: 10),
@@ -242,7 +245,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                     ],
                   ),
                 ),
-                if (!registrationService.isBasicInfoValid)
+                if (!basicInfoProvider.isBasicInfoValid)
                   SizedBox(
                     height: 15,
                   ),
@@ -259,10 +262,15 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                   Colors.indigo[800],
                                 ),
                               ),
-                              onPressed: () {
-                                if (registrationService.isBasicInfoValid) {
-                                  registrationService
-                                      .changePage(Pages.PerofessionalInfo);
+                              onPressed: () async {
+                                if (basicInfoProvider.isBasicInfoValid) {
+                                  var value = await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              PersonalInfoPage()));
+                                  if (value) {
+                                    initialAssigns(basicInfoProvider);
+                                  }
                                 }
                               },
                               child: Text("Next")),

@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:keyboard_actions/keyboard_actions_config.dart';
 import 'package:provider/provider.dart';
-import 'package:registration_form_app/validation/registration_validation.dart';
+import 'package:registration_form_app/viewModels/addressInfoProvider.dart';
+import 'package:registration_form_app/views/review_page.dart';
+import 'package:registration_form_app/widgets/custom_textfield.dart';
+import 'package:registration_form_app/widgets/custom_ui_pickerview.dart';
 import 'package:registration_form_app/widgets/custom_widgets.dart';
+import 'package:registration_form_app/widgets/cutom_appbar.dart';
 
 class AddressPage extends StatefulWidget {
   @override
@@ -16,30 +20,22 @@ class _AddressPageState extends State<AddressPage> {
   TextEditingController _cityController = TextEditingController();
   TextEditingController _pinCodeController = TextEditingController();
   final FocusNode _pincodeNode = FocusNode();
-  List<String> statesList = [
-    "Maharashtra",
-    "Gujarat",
-    "Karnataka",
-    "Madhya Pradesh",
-    "Delhi",
-    "Others"
-  ];
 
   @override
   void initState() {
     super.initState();
 
-    final registrationService =
-        Provider.of<RegistrationValidation>(context, listen: false);
+    final addressInfoProvider =
+        Provider.of<AddressInfoProvider>(context, listen: false);
 
-    initialAssigns(registrationService);
+    initialAssigns(addressInfoProvider);
   }
 
-  initialAssigns(RegistrationValidation registrationService) {
-    _addressController.text = registrationService.address.value;
-    _landmarkController.text = registrationService.landmark.value;
-    _cityController.text = registrationService.city.value;
-    _pinCodeController.text = registrationService.pinCode.value;
+  initialAssigns(AddressInfoProvider addressInfoProvider) {
+    _addressController.text = addressInfoProvider.address.value;
+    _landmarkController.text = addressInfoProvider.landmark.value;
+    _cityController.text = addressInfoProvider.city.value;
+    _pinCodeController.text = addressInfoProvider.pinCode.value;
   }
 
   KeyboardActionsConfig buildConfig(BuildContext context) {
@@ -72,7 +68,7 @@ class _AddressPageState extends State<AddressPage> {
 
   @override
   Widget build(BuildContext context) {
-    final validationService = Provider.of<RegistrationValidation>(context);
+    final addressInfoProvider = Provider.of<AddressInfoProvider>(context);
 
     return Scaffold(
       body: KeyboardActions(
@@ -84,63 +80,63 @@ class _AddressPageState extends State<AddressPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  customAppBar(
-                    title: "Your Address",
-                    onPressed: () =>
-                        validationService.changePage(Pages.PerofessionalInfo),
-                  ),
+                  CustomAppBar(
+                      title: "Your Address",
+                      onPressed: () {
+                        Navigator.of(context).pop(true);
+                      }),
                   Column(
                     children: [
-                      showTextField(
+                      CustomTextField(
                         controller: _addressController,
                         textFieldHeading: null,
                         hintText: 'Address*',
-                        errorText: validationService.address.error,
+                        errorText: addressInfoProvider.address.error,
                         icon: Icons.apartment_outlined,
                         onSubmitted: (value) {
-                          validationService.validateAddress(value);
+                          addressInfoProvider.validateAddress(value);
                         },
                       ),
-                      showTextField(
+                      CustomTextField(
                         controller: _landmarkController,
                         textFieldHeading: null,
                         hintText: 'Landmark*',
-                        errorText: validationService.landmark.error,
+                        errorText: addressInfoProvider.landmark.error,
                         icon: Icons.apartment_outlined,
                         onSubmitted: (value) {
-                          validationService.validateLandmark(value);
+                          addressInfoProvider.validateLandmark(value);
                         },
                       ),
-                      showTextField(
+                      CustomTextField(
                         controller: _cityController,
                         textFieldHeading: null,
                         hintText: 'City',
-                        errorText: validationService.city.error,
+                        errorText: addressInfoProvider.city.error,
                         icon: Icons.apartment_outlined,
                         onSubmitted: (value) {
-                          validationService.setCity(value);
+                          addressInfoProvider.setCity(value);
                         },
                       ),
                       SizedBox(
                         height: 7,
                       ),
-                      customPickerField(
+                      CustomPickerFiled(
                           headingMessage: null,
-                          value: validationService.state.value ??
+                          value: addressInfoProvider.state.value ??
                               "Select Your State*",
                           height: 50,
                           onTap: () {
                             showPicker(
                                 context: context,
-                                items: statesList,
+                                items: addressInfoProvider.states,
                                 onConfirm: (controller) {
-                                  String item = statesList[
+                                  String item = addressInfoProvider.states[
                                       controller.selectedRowAt(section: 0)];
-                                  validationService.validateState(item);
+                                  addressInfoProvider.validateState(item);
                                 },
                                 pickerHeading: "State",
                                 onCancel: () {
-                                  validationService.deselectState();
+                                  addressInfoProvider.deselectState();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('State field cleared'),
@@ -151,18 +147,18 @@ class _AddressPageState extends State<AddressPage> {
                       SizedBox(
                         height: 7,
                       ),
-                      showTextField(
+                      CustomTextField(
                           focusNode: _pincodeNode,
                           controller: _pinCodeController,
                           textFieldHeading: null,
                           hintText: 'Pin Code',
-                          errorText: validationService.pinCode.error,
+                          errorText: addressInfoProvider.pinCode.error,
                           icon: Icons.apartment_outlined,
                           onSubmitted: (value) {
-                            validationService.setPincode(value);
+                            addressInfoProvider.setPincode(value);
                           },
                           textInputType: TextInputType.numberWithOptions()),
-                      if (!validationService.isAddressInfoValid)
+                      if (!addressInfoProvider.isAddressInfoValid)
                         SizedBox(
                           height: 10,
                         ),
@@ -172,7 +168,7 @@ class _AddressPageState extends State<AddressPage> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
-                              !validationService.isAddressInfoValid
+                              !addressInfoProvider.isAddressInfoValid
                                   ? "Please fill the required details with * symbol"
                                   : "",
                               style: TextStyle(color: Colors.red, fontSize: 10),
@@ -180,7 +176,7 @@ class _AddressPageState extends State<AddressPage> {
                           ],
                         ),
                       ),
-                      if (!validationService.isAddressInfoValid)
+                      if (!addressInfoProvider.isAddressInfoValid)
                         SizedBox(
                           height: 10,
                         ),
@@ -195,7 +191,7 @@ class _AddressPageState extends State<AddressPage> {
                                             MaterialStateProperty.all<Color>(
                                                 Colors.indigo[800])),
                                     onPressed: () {
-                                      if (validationService
+                                      if (addressInfoProvider
                                           .isAddressInfoValid) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
@@ -204,6 +200,11 @@ class _AddressPageState extends State<AddressPage> {
                                                 Text('Registration Sucessfull'),
                                           ),
                                         );
+
+                                        Navigator.of(context).pushReplacement(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ReviewPage()));
                                       }
                                     },
                                     child: Text("Submit")))
